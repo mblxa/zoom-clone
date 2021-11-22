@@ -1,66 +1,60 @@
 import {Socket, io} from 'socket.io-client';
 import Peer from "peerjs";
-import {useEffect, useRef} from "react";
-import {v4} from "uuid";
+import {useEffect, useRef, useState} from "react";
+import {UserVideoStream} from "./user-video-stream";
 const ROOM_ID = 1;
-
-function connectToNewUser(videoGrid, myPeer, userId, stream) {
-    const call = myPeer.call(userId, stream)
-    const video = document.createElement('video')
-    call.on('stream', userVideoStream => {
-        console.log('connectToNewUser stream')
-        addVideoStream(videoGrid, video, userVideoStream)
-    })
-    call.on('close', () => {
-        video.remove()
-    })
-}
-
-function addVideoStream(videoGrid, video, stream) {
-    video.srcObject = stream
-    video.addEventListener('loadedmetadata', () => {
-        video.play()
-        video.muted = true;
-    })
-    videoGrid.append(video)
-}
 
 const Video = () => {
     const socketRef = useRef<Socket | null>(null)
     const myPeerRef = useRef<Peer | null>(null);
+    const [userVideos, setUserVideos] = useState<{stream: MediaStream, id: string;}[]>([]);
+    console.log(userVideos)
 
     useEffect(() => {
         socketRef.current = io("/", {path: '/api/socketio'});
 
         myPeerRef.current = new Peer();
-            // myPeerRef.current = new Peer(undefined, {
-            //     host: '/',
-            //     port: 3000,
-            //     path: '/api/socketio',
-            // })
-            const myVideo = document.createElement('video')
-            myVideo.muted = true
+        // myPeerRef.current = new Peer(undefined, {
+        //     host: '/',
+        //     port: 3000,
+        //     path: '/api/socketio',
+        // })
+        navigator.mediaDevices.getUserMedia({
+            video: true,
+            audio: true
+        }).then(stream => {
+            if (!socketRef.current || !myPeerRef.current) {
+                return;
+            }
 
-            const videoGrid = document.getElementById('video-grid')
-
-            navigator.mediaDevices.getUserMedia({
-                video: true,
-                audio: true
-            }).then(stream => {
-                addVideoStream(videoGrid, myVideo, stream)
-
-                myPeerRef.current?.on('call', call => {
-                    call.answer(stream)
-                    const video = document.createElement('video')
-                    call.on('stream', userVideoStream => {
-                        addVideoStream(videoGrid, video, userVideoStream)
-                    })
-                })
-
-                socketRef.current?.on('user-connected', userId => {
-                    connectToNewUser(videoGrid, myPeerRef.current, userId, stream)
+            setUserVideos([{stream, id: "0"}])
+            myPeerRef.current.on('call', call => {
+                call.answer(stream)
+                call.on('stream', userVideoStream => {
+                    setUserVideos(state => ([
+                        ...state.filter(item => item.id !== call.peer),
+                    {stream: userVideoStream, id: call.peer}
+                    ]))
                 })
             })
+
+            socketRef.current.on('user-connected', userId => {
+                if (!myPeerRef.current) {
+                    return;
+                }
+                const call = myPeerRef.current.call(userId, stream);
+                call.on('stream', userVideoStream => {
+                    setUserVideos(state => ([
+                        ...state.filter(item => item.id !== userId),
+                        {stream: userVideoStream, id: userId}
+                    ]));
+                })
+            })
+
+            socketRef.current.on("user-disconnected", userId => {
+                setUserVideos(state => state.filter(video => video.id !== userId))
+            })
+        })
 
         myPeerRef.current?.on('open', id => {
             socketRef.current?.emit('join-room', {roomId: ROOM_ID, userId: id})
@@ -68,7 +62,7 @@ const Video = () => {
 
     }, [])
     return (
-            <div id="video-grid"/>
+        <div>{userVideos.map(item => (<UserVideoStream stream={item.stream} key={item.id} />))}</div>
     )
 }
 
