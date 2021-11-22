@@ -2,12 +2,6 @@ import type { NextPage } from 'next'
 import Head from 'next/head'
 import styles from '../../styles/Home.module.css'
 
-import dynamic from 'next/dynamic'
-
-const DynamicComponentWithNoSSR = dynamic(() => import('../components/video'), {
-    ssr: false
-})
-
 const Home: NextPage = () => {
   return (
     <div className={styles.container}>
@@ -17,7 +11,6 @@ const Home: NextPage = () => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <h1>Hello</h1>
-        <DynamicComponentWithNoSSR/>
     </div>
   )
 }

@@ -2,9 +2,12 @@ import {Socket, io} from 'socket.io-client';
 import Peer from "peerjs";
 import {useEffect, useRef, useState} from "react";
 import {UserVideoStream} from "./user-video-stream";
-const ROOM_ID = 1;
 
-const Video = () => {
+interface VideoProps {
+    roomId: string;
+}
+
+const Video: React.FC<VideoProps> = props => {
     const socketRef = useRef<Socket | null>(null)
     const myPeerRef = useRef<Peer | null>(null);
     const [userVideos, setUserVideos] = useState<{stream: MediaStream, id: string;}[]>([]);
@@ -57,12 +60,12 @@ const Video = () => {
         })
 
         myPeerRef.current?.on('open', id => {
-            socketRef.current?.emit('join-room', {roomId: ROOM_ID, userId: id})
+            socketRef.current?.emit('join-room', {roomId: props.roomId, userId: id})
         })
 
     }, [])
     return (
-        <div>{userVideos.map(item => (<UserVideoStream stream={item.stream} key={item.id} />))}</div>
+        <div>{userVideos.map(item => (<UserVideoStream stream={item.stream} key={item.id} muted={item.id === "0"} />))}</div>
     )
 }
 

@@ -2,6 +2,7 @@ import React, {useEffect, useRef} from "react";
 
 interface UserVideoStreamProps {
     stream: MediaStream;
+    muted: boolean;
 }
 
 export const UserVideoStream: React.FC<UserVideoStreamProps> = props => {
@@ -22,5 +23,5 @@ export const UserVideoStream: React.FC<UserVideoStreamProps> = props => {
         }
     }, [videoRef.current])
 
-    return (<video ref={videoRef} muted={true}/>)
+    return (<video style={{width: "500px", height:"350px"}} ref={videoRef} muted={props.muted}/>)
 }
