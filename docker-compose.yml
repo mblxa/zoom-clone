@@ -1,8 +1,19 @@
 version: '3'
 services:
-  bot:
+  nodejs:
     restart: on-failure
     build:
       context: .
     ports:
-      - 80:3000
+      - 3000:3000
+
+  nginx:
+    image: nginx:1.15-alpine
+    volumes:
+      - /etc/letsencrypt/live/zoom.managetasks.ru/:/etc/certs
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - nodejs
+
