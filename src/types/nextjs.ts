@@ -3,11 +3,11 @@ import { NextApiResponse } from "next";
 import { Server as SocketIOServer } from "socket.io";
 
 export type NetServerWithIo = NetServer & {
-    io: SocketIOServer;
-}
+  io: SocketIOServer;
+};
 
 export type NextApiResponseServerIO = NextApiResponse & {
-    socket: Socket & {
-        server: NetServerWithIo;
-    };
+  socket: Socket & {
+    server: NetServerWithIo;
+  };
 };

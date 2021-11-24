@@ -1,28 +1,34 @@
-import React, {useEffect, useRef} from "react";
+import React, { useEffect, useRef } from "react";
 
 interface UserVideoStreamProps {
-    stream: MediaStream;
-    muted: boolean;
+  stream: MediaStream;
+  muted: boolean;
 }
 
-export const UserVideoStream: React.FC<UserVideoStreamProps> = props => {
-    const videoRef = useRef<HTMLVideoElement | null>(null)
+export const UserVideoStream: React.FC<UserVideoStreamProps> = (props) => {
+  const videoRef = useRef<HTMLVideoElement | null>(null);
 
-    const playStream = () => {
-        videoRef.current?.play();
+  const playStream = () => {
+    videoRef.current?.play();
+  };
+
+  useEffect(() => {
+    if (videoRef.current) {
+      videoRef.current.srcObject = props.stream;
+      videoRef.current.addEventListener("loadedmetadata", playStream);
+      videoRef.current.setAttribute("playsinline", "true");
     }
 
-    useEffect(() => {
-        if (videoRef.current) {
-            videoRef.current.srcObject = props.stream;
-            videoRef.current.addEventListener('loadedmetadata', playStream)
-            videoRef.current.setAttribute("playsinline", "true");
-        }
+    return () => {
+      videoRef.current?.removeEventListener("loadedmetadata", playStream);
+    };
+  }, [videoRef.current]);
 
-        return () => {
-            videoRef.current?.removeEventListener('loadedmetadata', playStream)
-        }
-    }, [videoRef.current])
-
-    return (<video style={{width: "500px", height:"350px"}} ref={videoRef} muted={props.muted}/>)
-}
+  return (
+    <video
+      style={{ width: "500px", height: "350px" }}
+      ref={videoRef}
+      muted={props.muted}
+    />
+  );
+};
