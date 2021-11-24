@@ -54,12 +54,12 @@ const Video: FC<VideoProps> = props => {
 
     useEffect(() => {
         socketRef.current = io("/", {path: '/api/socketio'});
-        myPeerRef.current = new Peer();
-        // myPeerRef.current = new Peer(undefined, {
-        //     host: '/',
-        //     port: 3000,
-        //     path: '/api/socketio',
-        // })
+        // myPeerRef.current = new Peer();
+        myPeerRef.current = new Peer(undefined, {
+            host: 'localhost',
+            port: 9000,
+            path: '/myapp',
+        })
 
         myPeerRef.current?.on('open', id => {
             socketRef.current?.emit('join-room', {roomId: props.roomId, userId: id})
