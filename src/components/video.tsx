@@ -11,13 +11,23 @@ const Video: FC<VideoProps> = props => {
     const socketRef = useRef<Socket | null>(null)
     const myPeerRef = useRef<Peer | null>(null);
     const [userVideos, setUserVideos] = useState<{stream: MediaStream, id: string;}[]>([]);
+    const [stream, setStream] = useState<MediaStream | null>(null);
+
+    useEffect(() => {
+        (async () => {
+            const newStream = await navigator.mediaDevices.getUserMedia({
+                video: true,
+                audio: true
+            });
+            setStream(newStream);
+        })();
+    }, [])
 
     const connectStream = async () => {
-        const stream = await navigator.mediaDevices.getUserMedia({
-            video: true,
-            audio: true
-        });
-
+        if (!stream) {
+            alert("No stream");
+            return;
+        }
         if (!socketRef.current || !myPeerRef.current) {
             alert("no sockets")
             return;
@@ -53,6 +63,9 @@ const Video: FC<VideoProps> = props => {
     }
 
     useEffect(() => {
+        if (!stream) {
+            return;
+        }
         socketRef.current = io("/", {path: '/api/socketio'});
         myPeerRef.current = new Peer();
         // myPeerRef.current = new Peer(undefined, {
@@ -67,7 +80,7 @@ const Video: FC<VideoProps> = props => {
 
         connectStream();
 
-    }, [])
+    }, [stream])
     return (
         <div>{userVideos.map(item => (<UserVideoStream stream={item.stream} key={item.id} muted={item.id === "0"} />))}</div>
     )
