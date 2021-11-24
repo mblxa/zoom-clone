@@ -16,6 +16,7 @@ export const UserVideoStream: React.FC<UserVideoStreamProps> = props => {
         if (videoRef.current) {
             videoRef.current.srcObject = props.stream;
             videoRef.current.addEventListener('loadedmetadata', playStream)
+            videoRef.current.setAttribute("playsinline", "true");
         }
 
         return () => {

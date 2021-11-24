@@ -1,13 +1,13 @@
 import {Socket, io} from 'socket.io-client';
 import Peer from "peerjs";
-import {useEffect, useRef, useState} from "react";
+import {FC, useEffect, useRef, useState} from "react";
 import {UserVideoStream} from "./user-video-stream";
 
 interface VideoProps {
     roomId: string;
 }
 
-const Video: React.FC<VideoProps> = props => {
+const Video: FC<VideoProps> = props => {
     const socketRef = useRef<Socket | null>(null)
     const myPeerRef = useRef<Peer | null>(null);
     const [userVideos, setUserVideos] = useState<{stream: MediaStream, id: string;}[]>([]);
